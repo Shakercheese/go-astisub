@@ -65,16 +65,31 @@ func TestWebVTTWithVoiceName(t *testing.T) {
 
 	4
 	00:00:04.000 --> 00:00:08.000
-	<v Bob>Incorrect tag?</vi>`
+	<v Bob>Incorrect tag?</vi>
+
+	5
+	00:00:04.000 --> 00:00:08.000
+	Waylon: Handling Zooms crappy format 1.
+
+	6
+	00:00:04.000 --> 00:00:08.000
+	Waylon Jennings : Handling Zooms crappy format 2.
+
+	7
+	00:00:04.000 --> 00:00:08.000
+	Waylon Jennings Bad: Handling Zooms crappy format 3.`
 
 	s, err := astisub.ReadFromWebVTT(strings.NewReader(testData))
 	assert.NoError(t, err)
 
-	assert.Len(t, s.Items, 4)
+	assert.Len(t, s.Items, 7)
 	assert.Equal(t, "Roger Bingham", s.Items[0].Lines[0].VoiceName)
 	assert.Equal(t, "Bingham", s.Items[1].Lines[0].VoiceName)
 	assert.Equal(t, "Lee", s.Items[2].Lines[0].VoiceName)
 	assert.Equal(t, "Bob", s.Items[3].Lines[0].VoiceName)
+	assert.Equal(t, "Waylon", s.Items[4].Lines[0].VoiceName)
+	assert.Equal(t, "Waylon Jennings", s.Items[5].Lines[0].VoiceName)
+	assert.Equal(t, "", s.Items[6].Lines[0].VoiceName)
 
 	b := &bytes.Buffer{}
 	err = s.WriteToWebVTT(b)
@@ -98,6 +113,18 @@ NOTE this a example with voicename
 4
 00:00:04.000 --> 00:00:08.000
 <v Bob>Incorrect tag?
+
+5
+00:00:04.000 --> 00:00:08.000
+<v Waylon>Handling Zooms crappy format 1.
+
+6
+00:00:04.000 --> 00:00:08.000
+<v Waylon Jennings>Handling Zooms crappy format 2.
+
+7
+00:00:04.000 --> 00:00:08.000
+Waylon Jennings Bad: Handling Zooms crappy format 3.
 `, b.String())
 }
 

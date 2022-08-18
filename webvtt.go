@@ -33,6 +33,7 @@ var (
 	bytesWebVTTItalicStartTag          = []byte("<i>")
 	bytesWebVTTTimeBoundariesSeparator = []byte(webvttTimeBoundariesSeparator)
 	webVTTRegexpStartTag               = regexp.MustCompile(`(<v([\.\w]*)([\s\w]+)+>)`)
+	webVTTRegexpZoomStartTag           = regexp.MustCompile(`(^\w+(\s\w+)?(\s+)?\:(\s+)?)`)
 )
 
 // parseDurationWebVTT parses a .vtt duration
@@ -275,6 +276,15 @@ func ReadFromWebVTT(i io.Reader) (o *Subtitles, err error) {
 
 // parseTextWebVTT parses the input line to fill the Line
 func parseTextWebVTT(i string) (o Line) {
+	// Zoom exports have a bad format so we must fix before processing
+	if matches := webVTTRegexpZoomStartTag.FindStringSubmatch(i); len(matches) > 3 {
+		// if we match the full line there isn't any text so skip or tests fail
+		if matches[0] != i {
+			matched := strings.TrimSpace(strings.Replace(matches[0], ":", "", 1))
+			i = strings.Replace(i, matches[0], fmt.Sprintf(`<v %s>`, matched), 1)
+		}
+	}
+
 	// Create tokenizer
 	tr := html.NewTokenizer(strings.NewReader(i))
 
